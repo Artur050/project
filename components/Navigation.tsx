@@ -37,7 +37,7 @@ const Navigation = ({ navLinks }:Props) => {
             {session?.data && (
                 <Link href="/profile">Profile</Link>
             )}
-            {session?.data ? <Link href="#" onClick={() => signOut({callbackUrl: '/' })}>Sign Out</Link> : <Link href="/api/auth/signin">Sign In</Link>}
+            {session?.data ? <Link href="#" onClick={() => signOut({callbackUrl: '/' })}>Sign Out</Link> : <Link href="/signin">Sign In</Link>}
         </>
     )
 }

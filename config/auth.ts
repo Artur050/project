@@ -34,4 +34,7 @@ export const authConfig: AuthOptions = {
     //         return baseUrl;
     //     }
     // }
+    pages: {
+        signIn: '/signin',
+    }
 }
