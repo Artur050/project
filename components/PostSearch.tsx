@@ -1,7 +1,7 @@
 'use client'
 
 import { getPostsBySearch } from "@/services/getPosts"
-import { usePosts } from "@/store";
+// import { usePosts } from "@/store";
 import { FormEventHandler, useState } from "react"
 import useSWR from "swr";
 
