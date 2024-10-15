@@ -25,9 +25,9 @@ const handleSubmit : FormEventHandler<HTMLFormElement> = async (event) => {
 
 return (
     <form onSubmit={handleSubmit} className="bg-white shadow-md rounded-lg p-6 max-w-md mx-auto">
-        <input type="email" name="email" required placeholder="Email"
+        <input type="email" name="email" required placeholder="Email" autoComplete="on"
         className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"  />
-        <input type="password" name="password" required placeholder="Password"
+        <input type="password" name="password" required placeholder="Password" autoComplete="on"
         className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent mb-1" />
         <button type="submit" className="w-full bg-blue-600 text-white font-semibold py-2 rounded-lg hover:bg-blue-700 transition duration-200">Sign In</button>
     </form>
