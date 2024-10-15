@@ -13,13 +13,13 @@ const handleSubmit : FormEventHandler<HTMLFormElement> = async (event) => {
     const res = await signIn('credentials',{
         email: formData.get('email'),
         password: formData.get('password'),
-        redirect: false,
+        callbackUrl: '/profile'
     } )
 
     if(res && !res.error ) {
         router.push('/profile')
     } else {
-        console.log(res)
+        console.error(res?.error);
     }
 }
 
