@@ -8,6 +8,7 @@ export default async function Profile() {
     return (
         <div>
             <h1>Profile of {session?.user?.name}</h1>
+            <h2>Email {session?.user?.email}</h2>
             {session?.user?.image && (
                 <Image
                     alt="Profile image"

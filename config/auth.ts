@@ -1,7 +1,13 @@
-import { users } from "@/data/users";
-import type { AuthOptions, User } from "next-auth";
+import { getUserByEmail } from "@/prisma/user";
+import type { AuthOptions, User as NextAuthUser } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import GoggleProvider from "next-auth/providers/google";
+import bcrypt from "bcrypt";
+
+interface User extends NextAuthUser {
+    role: string;
+}
+
 
 export const authConfig: AuthOptions = {
     providers: [
@@ -14,26 +20,37 @@ export const authConfig: AuthOptions = {
                 email: { label: 'email', type: 'email', required: true},
                 password: { label: 'password', type: 'password', required: true},
             },
-            async authorize(credentials) {
-        if (!credentials?.email || !credentials.password) return null;
-
-        const currentUser = users.find(user => user.email === credentials.email)
-
-            if (currentUser && currentUser.password === credentials.password) {
-            const { password, ...userWithoutPass } = currentUser;
-
-            return userWithoutPass as User;
+        async authorize(credentials) {
+            if (!credentials?.email || !credentials.password) {
+                return null;
             }
 
-        return null;
+            const user = await getUserByEmail(credentials?.email);
+            
+            if(user && (await bcrypt.compare(credentials?.password, user.password))) {
+                return { id: user.id, email: user.email, role: user.role, name: user.name } as User;
+            }
+
+            return null;
         }
         })
     ],
-    // callbacks: {
-    //     async redirect:({url, baseUrl}) {
-    //         return baseUrl;
-    //     }
-    // }
+    callbacks: {
+        async jwt({ token, user }) {
+          if (user) {
+            token.id = user.id;
+            token.role = user.role;
+          }
+          return token;
+        },
+        async session({ session, token }) {
+            if (session.user) {
+                session.user.id = token.id as string;
+                session.user.role = token.role as string;
+            }
+            return session;
+        },
+      },
     pages: {
         signIn: '/signin',
     }
