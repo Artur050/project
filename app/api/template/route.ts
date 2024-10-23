@@ -15,7 +15,6 @@ export async function POST(req: Request) {
 
     let savedTemplate;
     if (id) {
-      // Обновляем существующий шаблон
       savedTemplate = await updateTemplate(id, {
         title,
         description,
@@ -23,7 +22,6 @@ export async function POST(req: Request) {
         publicFlag,
       });
     } else {
-      // Создаём новый шаблон
       savedTemplate = await createTemplate({
         title,
         description,
@@ -32,15 +30,6 @@ export async function POST(req: Request) {
         authorId: session.user.id,
       });
     }
-
-
-    // const newTemplate = await createTemplate({
-    //   title,
-    //   description,
-    //   questions,
-    //   publicFlag,
-    //   authorId: session.user.id,
-    // });
 
     return NextResponse.json(savedTemplate, { status: 201 });
   } catch (error) {

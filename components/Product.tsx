@@ -15,7 +15,6 @@ const Product: React.FC<ProductProps> = ({product}) => {
   const handleDelete = async (id:string) => {
     try {
       await deleteProduct(id);
-      // alert('Product deleted successfully');
     } catch (error) {
       alert(error)
     }

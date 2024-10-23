@@ -4,9 +4,6 @@ import { posts } from "./posts";
 
 export async function GET(req: Request) {
     const {} = new URL(req.url);
-
-    // const query = searchParams.get('q');
-
     return NextResponse.json( posts)
 }
 

@@ -20,12 +20,10 @@ const RegistrationForm = () => {
         });
 
         if (response.ok) {
-            // Перенаправление на страницу входа
             router.push("/signin");
         } else {
-            // Обработка ошибки
             console.error("Ошибка регистрации");
-            const errorData = await response.json(); // Для получения информации об ошибке
+            const errorData = await response.json();
             console.error(errorData);
         }
     };

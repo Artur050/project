@@ -1,14 +1,12 @@
 'use client'
 
 import { getPostsBySearch } from "@/services/getPosts"
-// import { usePosts } from "@/store";
 import { FormEventHandler, useState } from "react"
 import useSWR from "swr";
 
 const PostSearch = () => {
     const {mutate} = useSWR("posts")
     const [search, setSearch] = useState('');
-    // const  getPostsBySearch = usePosts(state => state.getPostsBySearch)
 
     const handleSubmit: FormEventHandler<HTMLFormElement> = async (event) => {
         event.preventDefault();
