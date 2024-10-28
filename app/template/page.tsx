@@ -1,11 +1,9 @@
-import TemplateForm from "@/components/TemplateForm";
+import TemplateForm from '@/components/TemplateForm';
 
-export default function TemplatePage() {
-    
+export default function Template() {
     return (
-      <div className="container mx-auto">
-        <TemplateForm templateData={undefined} />
-      </div>
+        <>
+            <TemplateForm />
+        </>
     );
-  }
-  
+}

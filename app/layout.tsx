@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { TheHeader } from "@/components/TheHeader";
-import { TheFooter } from "@/components/TheFooter";
 import { Providers } from "@/components/Providers";
 
 const geistSans = localFont({
@@ -33,8 +32,7 @@ export default function RootLayout({
       >
         <Providers>
           <TheHeader />
-            <main className="flex justify-center items-center h-[600px] bg-amber-500">{children}</main>
-          <TheFooter />
+            <main className="flex justify-center items-center h-[100vh] bg-white">{children}</main>
         </Providers>
       </body>
     </html>

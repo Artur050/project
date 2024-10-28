@@ -1,189 +1,147 @@
-"use client";
-import { useState } from "react";
+'use client';
+import { RootState } from '@/redux/store';
+import { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import {
+    addQuestion,
+    deleteQuestion,
+    setTitle,
+    setDesc,
+    setActiveQuestionIndex,
+} from '@/redux/templateslice';
+import Edit from './Edit';
+import Question from './Question';
+import { useRouter } from 'next/navigation';
 
-type QuestionType = "SHORT_TEXT" | "LONG_TEXT" | "INTEGER" | "CHECKBOX";
+const TemplateForm = () => {
+    const dispatch = useDispatch();
+    const title = useSelector((state: RootState) => state.template.title);
+    const description = useSelector((state: RootState) => state.template.desc);
+    const questions = useSelector((state: RootState) => state.template.questions);
 
-interface Question {
-  id?: string;
-  title: string;
-  type: QuestionType;
-}
+    const activeQuestionIndex = useSelector(
+        (state: RootState) => state.template.activeQuestionIndex,
+    );
+    const [loading, setLoading] = useState(false);
 
-interface TemplateData {
-  id?: string;
-  title: string;
-  description: string;
-  public: boolean;
-  questions: Question[];
-}
+    const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        e.preventDefault();
+        dispatch(setTitle(e.target.value));
+    };
 
-export default function TemplateForm({ templateData }: {templateData?: TemplateData}) {
-  const [formData, setFormData] = useState({
-    id: templateData?.id || '',
-    title: templateData?.title || '',
-    description: templateData?.description || '',
-    publicFlag: templateData?.public || false,
-    questions: templateData?.questions || [],
-  });
+    const handleDescChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        e.preventDefault();
+        dispatch(setDesc(e.target.value));
+    };
 
-  const addQuestion = () => {
-    setFormData((prev) => ({
-      ...prev,
-      questions: [...prev.questions, { title: '', type: 'SHORT_TEXT' }],
-    }));
-  };
+    const handleAddQuestion = () => {
+        dispatch(addQuestion());
+    };
 
-  const removeQuestion = (index: number) => {
-    setFormData((prev) => ({
-      ...prev,
-      questions: prev.questions.filter((_, i) => i !== index),
-    }));
-  };
+    const handleDeleteQuestion = (index: number) => {
+        dispatch(deleteQuestion(index));
+    };
+    const handleQuestionClick = (index: number) => {
+        dispatch(setActiveQuestionIndex(index));
+    };
+    const router = useRouter();
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        setLoading(true);
+        try {
+            const formdata = {
+                title,
+                description,
+                questions,
+                publicFlag: true,
+            };
+            console.log('Submitting form:', formdata);
+            const response = await fetch('/api/template', {
+                method: 'POST',
+                body: JSON.stringify(formdata),
+            });
+            if (response.ok) {
+                console.log(response);
+                router.push('/listtemplate');
+            }
+        } catch (err) {
+            console.log(err);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-  const updateQuestion = (index: number, updatedQuestion: Question) => {
-    setFormData((prev) => {
-      const updatedQuestions = prev.questions.map((q, i) =>
-        i === index ? updatedQuestion : q
-      );
-      return { ...prev, questions: updatedQuestions };
-    });
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.target;
-
-    const checked = type === 'checkbox' ? (e.target as HTMLInputElement).checked : undefined;
-
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value,
-    }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-
-    const templateData = {
-      ...formData,
-      questions: formData.questions.map((question) => ({
-        id: question.id || undefined,
-        title: question.title,
-        type: question.type,
-      })),
-      };
-
-    console.log('templateData', templateData)
-
-    try {
-      const response = await fetch('/api/template', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(templateData),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to submit template');
-      }
-
-      const result = await response.json();
-      console.log('Template saved', result);
-
-    } catch (error) {
-      console.error('Error:', error);
-    }
-  };
-
-  return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-semibold mb-4">
-        {templateData ? 'Edit Template' : 'Create New Template'}
-      </h1>
-      <form onSubmit={handleSubmit}>
-        <div className="mb-4">
-          <label className="block text-gray-700">Title</label>
-          <input
-            type="text"
-            name="title"
-            value={formData.title}
-            onChange={handleInputChange}
-            className="w-full p-2 border border-gray-300 rounded"
-          />
-        </div>
-        <div className="mb-4">
-          <label className="block text-gray-700">Description</label>
-          <textarea
-            name="description"
-            value={formData.description}
-            onChange={handleInputChange}
-            className="w-full p-2 border border-gray-300 rounded"
-          />
-        </div>
-        <div className="mb-4">
-          <label className="flex items-center">
-            <input
-              type="checkbox"
-              name="public"
-              checked={formData.publicFlag}
-              onChange={handleInputChange}
-              className="mr-2"
-            />
-            Public Template
-          </label>
-        </div>
-
-
-        <div className="mb-4">
-          <h3 className="text-lg font-semibold mb-2">Questions</h3>
-          {formData.questions.map((question, index) => (
-            <div key={index} className="mb-4">
-              <input
-                type="text"
-                value={question.title}
-                onChange={(e) =>
-                  updateQuestion(index, { ...question, title: e.target.value })
-                }
-                placeholder="Question title"
-                className="w-full p-2 border"
-              />
-              <select
-                value={question.type}
-                onChange={(e) =>
-                  updateQuestion(index, { ...question, type: e.target.value as QuestionType })
-                }
-                className="w-full p-2 border mt-2"
-              >
-                <option value="SHORT_TEXT">Short Text</option>
-                <option value="LONG_TEXT">Long Text</option>
-                <option value="INTEGER">Number</option>
-                <option value="CHECKBOX">Checkbox</option>
-              </select>
-              <button
-                type="button"
-                className="text-red-500 mt-2"
-                onClick={() => removeQuestion(index)}
-              >
-                Remove Question
-              </button>
+    return (
+        <div>
+            <div className="w-full grid mx-auto min-h-screen py-10">
+                <form
+                    onSubmit={handleSubmit}
+                    className="w-full block mx-auto h-full px-6 md:px-0 overflow-x-hidden"
+                >
+                    <div className="flex md:flex-row flex-col justify-center items-center max-w-3xl mx-auto">
+                        <div className="border-t-8 rounded-md my-6 border-[#7248B9] bg-white max-w-2xl shadow w-full grid place-items-center mx-auto">
+                            <div className="w-full border border-gray-300">
+                                <div className="w-full px-6 py-2">
+                                    <input
+                                        type="text"
+                                        required
+                                        onChange={handleTitleChange}
+                                        value={title ?? ''}
+                                        className="text-3xl outline-none font-bold capitalize border-b 
+                focus:border-b-2 border-gray-200 pt-3 pb-2 w-full focus:border-[#7248B9]"
+                                    />
+                                </div>
+                                <div className="w-full px-6 py-1 mb-6">
+                                    <input
+                                        type="text"
+                                        required
+                                        onChange={handleDescChange}
+                                        value={description ?? ''}
+                                        className="text-base outline-none font-medium capitalize border-b 
+                focus:border-b-2 border-gray-200 focus:border-[#7248B9] py-1 w-full"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            {questions.length === 0 && (
+                                <Edit
+                                    handleAdd={handleAddQuestion}
+                                    show
+                                    handleDelete={() => handleDeleteQuestion(questions.length - 1)}
+                                />
+                            )}
+                        </div>
+                    </div>
+                    <div className="relative">
+                        {questions.map((question, index) => (
+                            <Question
+                                onclick={() => handleQuestionClick(index)}
+                                key={index}
+                                index={index}
+                                value={question}
+                                addQuestion={handleAddQuestion}
+                                handleDelete={() => handleDeleteQuestion(index)}
+                                isActiveQuestion={index === activeQuestionIndex}
+                            />
+                        ))}
+                    </div>
+                    <div>
+                        {questions.length > 0 && (
+                            <div className="grid place-items-center w-auto mx-auto">
+                                <button
+                                    type="submit"
+                                    className="bg-[#29A0B1] text-white px-6 py-3 rounded"
+                                >
+                                    {loading ? 'Processing' : 'Save Form'}
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </form>
             </div>
-          ))}
-          <button
-            type="button"
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-            onClick={addQuestion}
-          >
-            Add Question
-          </button>
         </div>
-        <button
-          type="submit"
-          className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
-        >
-          {templateData ? 'Update Template' : 'Create Template'}
-        </button>
-      </form>
-    </div>
-  );
-}
+    );
+};
+
+export default TemplateForm;

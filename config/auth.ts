@@ -1,13 +1,12 @@
-import { getUserByEmail } from "@/prisma/user";
-import type { AuthOptions, User as NextAuthUser } from "next-auth";
-import Credentials from "next-auth/providers/credentials";
-import GoggleProvider from "next-auth/providers/google";
-import bcrypt from "bcrypt";
+import { getUserByEmail } from '@/prisma/user';
+import type { AuthOptions, User as NextAuthUser } from 'next-auth';
+import Credentials from 'next-auth/providers/credentials';
+import GoggleProvider from 'next-auth/providers/google';
+import bcrypt from 'bcrypt';
 
 interface User extends NextAuthUser {
     role: string;
 }
-
 
 export const authConfig: AuthOptions = {
     providers: [
@@ -17,31 +16,36 @@ export const authConfig: AuthOptions = {
         }),
         Credentials({
             credentials: {
-                email: { label: 'email', type: 'email', required: true},
-                password: { label: 'password', type: 'password', required: true},
+                email: { label: 'email', type: 'email', required: true },
+                password: { label: 'password', type: 'password', required: true },
             },
-        async authorize(credentials) {
-            if (!credentials?.email || !credentials.password) {
+            async authorize(credentials) {
+                if (!credentials?.email || !credentials.password) {
+                    return null;
+                }
+
+                const user = await getUserByEmail(credentials?.email);
+
+                if (user && (await bcrypt.compare(credentials?.password, user.password))) {
+                    return {
+                        id: user.id,
+                        email: user.email,
+                        role: user.role,
+                        name: user.name,
+                    } as User;
+                }
+
                 return null;
-            }
-
-            const user = await getUserByEmail(credentials?.email);
-            
-            if(user && (await bcrypt.compare(credentials?.password, user.password))) {
-                return { id: user.id, email: user.email, role: user.role, name: user.name } as User;
-            }
-
-            return null;
-        }
-        })
+            },
+        }),
     ],
     callbacks: {
         async jwt({ token, user }) {
-          if (user) {
-            token.id = user.id;
-            token.role = user.role;
-          }
-          return token;
+            if (user) {
+                token.id = user.id;
+                token.role = user.role;
+            }
+            return token;
         },
         async session({ session, token }) {
             if (session.user) {
@@ -50,8 +54,8 @@ export const authConfig: AuthOptions = {
             }
             return session;
         },
-      },
+    },
     pages: {
         signIn: '/signin',
-    }
-}
+    },
+};
