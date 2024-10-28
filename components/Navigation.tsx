@@ -71,7 +71,7 @@ const Navigation = ({ navLinks }: Props) => {
                             href="/register"
                             className={pathname === '/register' ? 'text-white' : ''}
                         >
-                            Регистрация
+                            Registration
                         </Link>
                     </>
                 )}
